@@ -1,0 +1,32 @@
+export const SESSIONS = [
+  {
+    subject: "Mathematics",
+    durationMinutes: 60,
+    ratePerHour: 300,
+    title: "Mathematics",
+    description: "One-on-one Mathematics tutoring session",
+    price: 300,
+    duration: 60,
+    isAvailable: true,
+  },
+  {
+    subject: "English",
+    durationMinutes: 60,
+    ratePerHour: 250,
+    title: "English",
+    description: "One-on-one English tutoring session",
+    price: 250,
+    duration: 60,
+    isAvailable: true,
+  },
+  {
+    subject: "Science",
+    durationMinutes: 60,
+    ratePerHour: 250,
+    title: "Science",
+    description: "One-on-one Science tutoring session",
+    price: 250,
+    duration: 60,
+    isAvailable: true,
+  },
+];
