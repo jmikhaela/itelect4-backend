@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "express-async-errors";
 import express, {
   type Request,
   type Response,
@@ -23,9 +24,19 @@ app.use(cors({ origin: ALLOWED_ORIGINS }));
 
 app.use(express.json());
 
-app.use(async (_req: Request, _res: Response, next: NextFunction) => {
-  await connectDB();
-  next();
+app.use(async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err: any) {
+    console.error("Database connection failed:", err);
+    res.status(500).json({
+      ok: false,
+      error: "Database connection failed",
+      message: err?.message || String(err),
+      hint: "Check MONGODB_URI in Vercel environment variables and ensure 0.0.0.0/0 is added to MongoDB Atlas Network Access",
+    });
+  }
 });
 
 app.get("/", (_req: Request, res: Response) => {
