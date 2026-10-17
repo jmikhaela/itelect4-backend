@@ -28,6 +28,13 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+app.get("/", (_req: Request, res: Response) => {
+  res.json({
+    ok: true,
+    message: "Backend API is running!",
+  });
+});
+
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });
 });
