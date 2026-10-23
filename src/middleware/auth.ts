@@ -2,6 +2,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
+
 export interface AuthRequest extends Request {
   userId?: string;
 }
@@ -52,3 +60,5 @@ export const authenticateToken = (
     });
   }
 };
+
+export const requireAuth = authenticateToken;
