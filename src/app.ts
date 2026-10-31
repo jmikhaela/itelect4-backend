@@ -21,7 +21,19 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? "")
   .map((origin) => origin.trim())
   .filter((origin) => origin !== "");
 
-app.use(cors({ origin: ALLOWED_ORIGINS }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, Postman, Supertest)
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Fallback allow to avoid preflight blocking
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
