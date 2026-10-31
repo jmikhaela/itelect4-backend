@@ -47,25 +47,42 @@ function buildContents(description: string): Content[] {
 
 // Thrown when Gemini answered but the answer is unusable. The route
 // turns it into a 502; anything else stays a 500.
-export class AiReplyError extends Error {}
+export class AiReplyError extends Error { }
 
 export async function reviewProject(
   description: string,
 ): Promise<Review> {
-  const response = await getClient().models.generateContent({
-    model: MODEL,
-    contents: buildContents(description),
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      // JSON, in exactly this shape. Without these two lines the
-      // reply is prose, and prose cannot be put on a screen field
-      // by field.
-      responseMimeType: "application/json",
-      responseJsonSchema: reviewJsonSchema,
-      // No temperature here, on purpose. Google's guide for the
-      // Gemini 3 models says to leave it at its default of 1.0.
-    },
-  });
+  const modelsToTry = [MODEL, "gemini-3.5-flash", "gemini-flash-lite-latest"];
+  let response: any = null;
+  let lastError: unknown = null;
+
+  for (const model of modelsToTry) {
+    try {
+      response = await getClient().models.generateContent({
+        model,
+        contents: buildContents(description),
+        config: {
+          systemInstruction: SYSTEM_PROMPT,
+          // JSON, in exactly this shape. Without these two lines the
+          // reply is prose, and prose cannot be put on a screen field
+          // by field.
+          responseMimeType: "application/json",
+          responseJsonSchema: reviewJsonSchema,
+          // No temperature here, on purpose. Google's guide for the
+          // Gemini 3 models says to leave it at its default of 1.0.
+        },
+      });
+      if (response?.text) break;
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`Model ${model} unavailable (${err?.status || err?.message}). Trying fallback...`);
+    }
+  }
+
+  if (!response?.text) {
+    if (lastError) throw lastError;
+    throw new AiReplyError("Gemini sent back no text");
+  }
 
   // undefined when there is no text at all -- for example a reply
   // that was blocked by Gemini's safety filters.
